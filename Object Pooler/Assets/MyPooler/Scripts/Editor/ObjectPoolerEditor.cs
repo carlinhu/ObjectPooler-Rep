@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using MyPooler;
 
@@ -10,13 +8,14 @@ public class ObjectPoolerEditor : Editor
     Texture2D logoTex;
     Texture2D backGroundTex;
 
-    public SerializedProperty pools, shouldDestroyOnLoad;
+    public SerializedProperty pools, isDebug, shouldDestroyOnLoad;
 
     void OnEnable()
     {
         logoTex = (Texture2D)EditorGUIUtility.Load("Assets/MyPooler/Scripts/Editor/Images/PoolerHeader.png");
         backGroundTex = (Texture2D)EditorGUIUtility.Load("Assets/MyPooler/Scripts/Editor/Images/PoolerBg.png");
 
+        isDebug = serializedObject.FindProperty("isDebug");
         shouldDestroyOnLoad = serializedObject.FindProperty("shouldDestroyOnLoad");
         pools = serializedObject.FindProperty("pools");
 
@@ -28,8 +27,10 @@ public class ObjectPoolerEditor : Editor
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
       
         DrawBackground();
-        DrawLogo();  
+        DrawLogo();
 
+        EditorGUILayout.Space();
+        EditorGUILayout.PropertyField(isDebug, new GUIContent("IsDebug"));
         EditorGUILayout.Space();
         EditorGUILayout.PropertyField(shouldDestroyOnLoad, new GUIContent("Should Destroy on Load"));
         EditorGUILayout.Space();
