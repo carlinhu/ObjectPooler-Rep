@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GenericObject : MonoBehaviour, PooledObjInterface
+public class GenericObject : MonoBehaviour, IPooledObject
 {
     public float defTimerToDestroy = 3f;
     public float timeToDestroy = 3f;
     public string poolTag;
     public bool isActive = false;
 
-    public void OnObjectPooled()
+    public void OnRequestedFromPool()
     {
         isActive = true;
         timeToDestroy = defTimerToDestroy;
     }
 
-    public void Discard()
+    public void DiscardToPool()
     {
         MyPooler.ObjectPooler.Instance.ReturnToPool(poolTag, this.gameObject);
         isActive = false;
@@ -28,7 +28,7 @@ public class GenericObject : MonoBehaviour, PooledObjInterface
             timeToDestroy -= Time.deltaTime;
             if (timeToDestroy <= 0f)
             {
-                Discard();
+                DiscardToPool();
             }
         }
     }

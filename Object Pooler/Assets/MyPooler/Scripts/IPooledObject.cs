@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-	public interface PooledObjInterface
+	public interface IPooledObject
 	{
-		void OnObjectPooled();
-		void Discard();
+		void OnRequestedFromPool();
+		void DiscardToPool();
 	}
 
 

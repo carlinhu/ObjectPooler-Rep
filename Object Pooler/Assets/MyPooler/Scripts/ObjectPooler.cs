@@ -114,11 +114,11 @@ namespace MyPooler
             o.SetActive(true);
             o.transform.position = position;
             o.transform.rotation = rotation;
-            PooledObjInterface pooledObj = o.GetComponent<PooledObjInterface>();
+            IPooledObject pooledObj = o.GetComponent<IPooledObject>();
 
             if (pooledObj != null)
             {
-                pooledObj.OnObjectPooled();
+                pooledObj.OnRequestedFromPool();
             }
 
             activeObjects[tag].Add(o);
@@ -150,7 +150,7 @@ namespace MyPooler
             List<GameObject> currentList = new List<GameObject>(activeObjects[tag]);
             foreach (GameObject go in currentList)
             {
-                go.GetComponent<PooledObjInterface>().Discard();
+                go.GetComponent<IPooledObject>().DiscardToPool();
             }
             currentList.Clear();
         }
@@ -161,7 +161,7 @@ namespace MyPooler
             {
                 foreach (GameObject o in item.Value.ToList())
                 {
-                    o.GetComponent<PooledObjInterface>().Discard();
+                    o.GetComponent<IPooledObject>().DiscardToPool();
                 }
             }
         }
