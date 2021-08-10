@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace MyPooler
 {
@@ -37,7 +38,7 @@ namespace MyPooler
             if (!shouldDestroyOnLoad)
                 DontDestroyOnLoad(this);
 
-            CreatePool();
+            CreatePools();
         }
 
         public bool isDebug = false;
@@ -47,7 +48,15 @@ namespace MyPooler
         public Dictionary<string, Transform> parents;
         public Dictionary<string, Queue<GameObject>> poolDictionary;
         public Dictionary<string, List<GameObject>> activeObjects;
+        public UnityAction onResetPools;
 
+        /// <summary>
+        /// Get an object from the pool if available
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        /// <returns></returns>
         public GameObject GetFromPool(string tag, Vector3 position, Quaternion rotation)
         {
             if (!poolDictionary.ContainsKey(tag))
@@ -67,7 +76,6 @@ namespace MyPooler
                 Pool currentPool = null;
                 float extensionLimit = 0f;
                 bool shouldExpandPool = false;
-
                 foreach (Pool p in pools)
                 {
                     if (p.tag == tag)
@@ -119,12 +127,18 @@ namespace MyPooler
             if (pooledObj != null)
             {
                 pooledObj.OnRequestedFromPool();
+                onResetPools += pooledObj.DiscardToPool;
             }
 
             activeObjects[tag].Add(o);
             return o;
         }
 
+        /// <summary>
+        /// Return an object to a pool
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <param name="o"></param>
         public void ReturnToPool(string tag, GameObject o)
         {
             if (!poolDictionary.ContainsKey(tag))
@@ -136,8 +150,13 @@ namespace MyPooler
             activeObjects[tag].Remove(o);
             poolDictionary[tag].Enqueue(o);
             o.SetActive(false);
+            if(onResetPools != null) onResetPools -= o.GetComponent<IPooledObject>().DiscardToPool;
         }
 
+        /// <summary>
+        /// Reset a entire pool 
+        /// </summary>
+        /// <param name="tag"></param>
         public void ResetPool(string tag)
         {
             if (!poolDictionary.ContainsKey(tag))
@@ -155,18 +174,15 @@ namespace MyPooler
             currentList.Clear();
         }
 
+        /// <summary>
+        /// Reset all pools
+        /// </summary>
         public void ResetAllPools()
         {
-            foreach (KeyValuePair<string, List<GameObject>> item in activeObjects)
-            {
-                foreach (GameObject o in item.Value.ToList())
-                {
-                    o.GetComponent<IPooledObject>().DiscardToPool();
-                }
-            }
+            onResetPools?.Invoke();
         }
 
-        void CreatePool()
+        void CreatePools()
         {
             poolDictionary = new Dictionary<string, Queue<GameObject>>();
             parents = new Dictionary<string, Transform>();
